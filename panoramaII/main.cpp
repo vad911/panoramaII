@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
 	// ===    и выберем из результатов сравнения самые похожие точки            ===
 
 	
-	cv::BFMatcher  matcher(cv::NORM_HAMMING);		// будем использовать BFMatcher сопоставитель
+	cv::BFMatcher  matcher;							// будем использовать BFMatcher сопоставитель
 	//cv::BFMatcher  matcher(cv::NORM_HAMMING);		// будем использовать BFMatcher сопоставитель
 	std::vector<cv::DMatch> matches;				// matches - здесь храним результаты сопоставления descriptoro' 
 
@@ -147,10 +147,10 @@ int main(int argc, char *argv[])
 
 
 
-	std::vector<cv::Point2f> img1;		// общая сцена 
-	std::vector<cv::Point2f> img2;		// объект, добавляемый в сцену
+	std::vector<cv::Point2f> img1;		// хранилище точек относящиехся к левому изображению
+	std::vector<cv::Point2f> img2;		// хранилище точек относящиехся к правому изображению, объекту, добавляемому в сцену
 
-	// к
+	// скопируем соотвествующие точки в 
 	for (int i = 0; i < good_matches.size(); ++i)
 	{
 		img1.push_back(keypoints_01[good_matches[i].queryIdx].pt);
@@ -168,11 +168,10 @@ int main(int argc, char *argv[])
 
 	//-- Покажем в окне результат найденных сопадений и выведем в файл
 	
-	// cv::waitKey(0);
-
+	
 	cv::imwrite("best_matches.jpg", img_matches);
-	//cv::imshow("best matches ...", img_matches);
-	/*
+	cv::imshow("best matches ...", img_matches);
+	// cv::waitKey(0);
 	if (cv::waitKey(33) >= 0)
 	{
 		cv::imwrite("best_matches.jpg", img_matches);
@@ -181,7 +180,6 @@ int main(int argc, char *argv[])
 	
 	}
 
-	*/
 	
 	// распечатаем список лучших точек
 	for (int i = 0; i < (int)good_matches.size(); ++i)
@@ -191,115 +189,9 @@ int main(int argc, char *argv[])
 	
 
 
-	
-
-	/*
-	//############################################ [1]
-	// === 5. Совместим две фотографии в одну. ===
-
-
-	
-	//получим  четыре входные - выходные точки из ключевых точек
-	cv::Point2f inputQuad[4] ;
-	cv::Point2f outputQuad[4];
-
-	inputQuad[0] = img1[0];
-	inputQuad[1] = img1[1];
-	inputQuad[2] = img1[2];
-	inputQuad[3] = img1[3];
-
-
-	outputQuad[0] = img2[0];
-	outputQuad[1] = img2[1];
-	outputQuad[2] = img2[2];
-	outputQuad[3] = img2[3];
-	
-
-//	cv::Point2f inputQuad[4];
-//	cv::Point2f outputQuad[4];
-
-
-	//cv::Mat panorama;	 // здесь храним полученную панораму - результат
-	cv::Mat warpedImage02(image_02.rows, 2 * image_02.cols, image_02.type());
-
-	
-	// Выясняем положение углов исходной картинке,
-	// по ширине и высоте
-	std::vector<cv::Point2f> inputCorners(4);
-	inputQuad[0] = cv::Point2f(0, 0);
-	inputQuad[1] = cv::Point2f(image_02.cols, 0);
-	inputQuad[2] = cv::Point2f(image_02.cols, image_02.rows);
-	inputQuad[3] = cv::Point2f(0, image_02.rows);
-	
-	// Выясняем, где они будут - применяем трансформацию
-	cv::Point2f outputQuad[4];
-	outputQuad[0] = cv::Point2f(0, 0);
-	outputQuad[1] = cv::Point2f(panorama.cols, 0);
-	outputQuad[2] = cv::Point2f(panorama.cols, panorama.rows);
-	outputQuad[3] = cv::Point2f(0, panorama.rows);
-	
 
 	// Найдем матрицу гомографии  - трансформации перспективы, 	
-	cv::Mat homography = cv::findHomography(img1, img2, cv::RANSAC);
-
-	// получаем матрицу трансформации
-	cv::Mat M = getPerspectiveTransform(inputQuad, outputQuad);
-
-
-	// углы изображение до начала трансформации
-	std::vector<cv::Point2f> inputCorners(4);
-	inputCorners[0] = cv::Point2f(0, 0);
-	inputCorners[1] = cv::Point2f(image_02.cols, 0);
-	inputCorners[2] = cv::Point2f(0, image_02.rows);
-	inputCorners[3] = cv::Point2f(image_02.cols, image_02.rows);
-
-	// углы изображения после трансформации, они могут быть иметь отрицательные координаты
-	std::vector<cv::Point2f> outputCorners(4);
-
-	// найдем выходные углы - outputCorners
-	perspectiveTransform(inputCorners, outputCorners, M);
-
-	cv::Rect br = cv::boundingRect(outputCorners);
-
-	for (int i = 0; i < 4; i++) {
-		outputQuad[i] += cv::Point2f(-br.x, -br.y);
-	}
-
-	M = getPerspectiveTransform(inputQuad, outputQuad);
-
-	cv::warpPerspective(image_02, warpedImage02, homography, br.size());
-		
-	imwrite("warpedImage02.jpg", warpedImage02);
-	
-
-	// -------- теперь сольем изображения в одно
-	cv::Mat panorama(image_01.rows, 3 * image_01.cols, image_01.type());
-
-	cv::Mat roiImgResult_Left = panorama(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImgResult_Right = panorama(cv::Rect(image_01.cols, 0, image_02.cols, image_02.rows));
-
-
-
-	// укажем интересующие нас прямоугольные области -  ROI: roiImg1, roiImg2
-	cv::Mat roiImg1 = image_01(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImg2 = warpedImage02(cv::Rect(0, 0, image_02.cols, image_02.rows));
-
-	//  скопируем ROI регионы  roiImg1 в roiImgResult_Left и roiImg2 в roiImgResult_Right
-	roiImg1.copyTo(roiImgResult_Left);	//Img1  - левая сторона изображения  imgResult
-	roiImg2.copyTo(roiImgResult_Right); //Img2  - правая сторона изображения  imgResult
-
-	
-	imwrite("panorama.jpg", panorama);
-
-	//############################################ [2]
-	*/
-
-	/*
-	cv::Mat lambda = cv::getPerspectiveTransform(inputQuad, outputQuad);
-
-
-	// Найдем матрицу гомографии  - трансформации перспективы, 	
-	cv::Mat homography = cv::findHomography(img1, img2, cv::RANSAC);
+	cv::Mat homography = cv::findHomography(img2, img1, cv::RANSAC);
 
 
 	if (homography.empty())
@@ -311,67 +203,18 @@ int main(int argc, char *argv[])
 
 	// наше изображение может выходить за пределы temp_panorama
 
-	// применим найденную матрицу трансформации -  homography к изображению image_01 -> результат  изображение: panorama
+	// применим найденную матрицу трансформации -  homography к изображению image_02 -> результат  изображение: panorama
 	// матрица будет хранить результат склейки
-	
-	cv::Mat warpresult2;	// сохраниним исправленное изображение в  warpresult2;
+	cv::Size sz(image_01.cols + image_02.cols, image_01.rows);
+	int type = image_02.type();
+
+	cv::Mat panorama;	// сохраниним исправленное изображение в  panorama;
 	// применим найденную матрицу трансформации -  homography к изображению image_02 -> результат  изображение: warpresult2
-	cv::warpPerspective(image_02, warpresult2, lambda, cv::Size(2 * image_02.cols, image_02.rows));
-	//cv::warpPerspective(image_02, warpresult2, homography, cv::Size(2 * image_02.cols, image_02.rows));
-
-
-			
-	cv::Mat roiImgResult_Left = panorama(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImgResult_Right = panorama(cv::Rect(image_01.cols, 0, image_02.cols, image_02.rows));
-
-	
-
-	// укажем интересующие нас прямоугольные области -  ROI: roiImg1, roiImg2
-	cv::Mat roiImg1 = image_01(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImg2 = warpresult2(cv::Rect(0, 0, image_02.cols, image_02.rows));
-
-	//  скопируем ROI регионы  roiImg1 в roiImgResult_Left и roiImg2 в roiImgResult_Right
-	roiImg1.copyTo(roiImgResult_Left);	//Img1  - левая сторона изображения  imgResult
-	roiImg2.copyTo(roiImgResult_Right); //Img2  - правая сторона изображения  imgResult
-
-	imwrite("warpresult2.jpg", warpresult2);
-
+	cv::warpPerspective(image_02_origin, panorama, homography, sz);
+		
+	cv::Mat half(panorama, cv::Rect(0, 0, image_01.cols, image_01.rows));
+	image_01_origin.copyTo(half);
 	imwrite("panorama.jpg", panorama);
-	*/
-	
-
-	
-	// === 5. Совместим две фотографии в одну. ===
-	cv::Mat warpresult2;	// сохраниним исправленное изображение в  warpresult2;
-
-	// Найдем матрицу гомографии  - трансформации перспективы
-	// количество точек в keypoints_01 и keypoints_02  не должно быть меньше 4.
-	//
-	cv::Mat homography = cv::findHomography( img1, img2, cv::RANSAC);
-
-
-	// применим найденную матрицу трансформации -  homography к изображению image_02 -> результат  изображение: warpresult2
-	cv::warpPerspective(image_02, warpresult2, homography, cv::Size(2 * image_02.cols, image_02.rows));
-
-	//cv::Mat panorama;						// здесь храним полученную панораму - результат
-	cv::Mat panorama(image_01.rows, 3 * image_01.cols, image_01.type());
-
-
-	cv::Mat roiImgResult_Left  = panorama(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImgResult_Right = panorama(cv::Rect(image_01.cols, 0, image_02.cols, image_02.rows));
-
-	// укажем интересующие нас прямоугольные области -  ROI: roiImg1, roiImg2
-	cv::Mat roiImg1 = image_01(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImg2 = warpresult2(cv::Rect(0, 0, image_02.cols, image_02.rows));
-
-	//  скопируем ROI регионы  roiImg1 в roiImgResult_Left и roiImg2 в roiImgResult_Right
-	roiImg1.copyTo(roiImgResult_Left);	//Img1  - левая сторона изображения  imgResult
-	roiImg2.copyTo(roiImgResult_Right); //Img2  - правая сторона изображения  imgResult
-
-	imshow("result", panorama);
-	imwrite("panorama.jpg", panorama);
-
-	
 
 
 	std::cout << "\n End prog" << std::endl;

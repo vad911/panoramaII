@@ -191,44 +191,7 @@ int main(int argc, char *argv[])
 	
 
 
-	// === 5. Совместим две фотографии в одну. ===
-	// Найдем матрицу гомографии  - трансформации перспективы, 	
-	cv::Mat homography = cv::findHomography(img1, img2, cv::RANSAC);
-
-
-
-	//Apply panorama correction
-	int width = image_01.cols + image_02.cols;
-	int height = image_01.rows + image_02.rows;
-
-	cv::Size sz(width, height);
-	int type = image_01.type();
-	cv::Mat panorama(sz,type);
 	
-	cv::warpPerspective(image_02, panorama, homography, sz);	// записали измененное image_02 в panorama
-
-	
-	imwrite("panorama.jpg", panorama);
-	/*
-	cv::Mat roiImgResult_Left  = panorama(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImgResult_Right = panorama(cv::Rect(image_01.cols, 0, t_width, t_height));
-
-
-
-	// укажем интересующие нас прямоугольные области -  ROI: roiImg1, roiImg2
-	cv::Mat roiImg1 = image_01(cv::Rect(0, 0, image_01.cols, image_01.rows));
-	cv::Mat roiImg2 = panorama(cv::Rect(0, 0, image_02.cols, image_02.rows));
-
-	//  скопируем ROI регионы  roiImg1 в roiImgResult_Left и roiImg2 в roiImgResult_Right
-	roiImg1.copyTo(roiImgResult_Left);	//Img1  - левая сторона изображения  imgResult
-	roiImg2.copyTo(roiImgResult_Right); //Img2  - правая сторона изображения  imgResult
-	*/
-
-//	imwrite("panorama.jpg", panorama);
-
-
-
-
 
 	/*
 	//############################################ [1]
@@ -377,7 +340,7 @@ int main(int argc, char *argv[])
 	*/
 	
 
-	/*
+	
 	// === 5. Совместим две фотографии в одну. ===
 	cv::Mat warpresult2;	// сохраниним исправленное изображение в  warpresult2;
 
@@ -408,7 +371,7 @@ int main(int argc, char *argv[])
 	imshow("result", panorama);
 	imwrite("panorama.jpg", panorama);
 
-	*/
+	
 
 
 	std::cout << "\n End prog" << std::endl;

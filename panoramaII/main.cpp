@@ -16,7 +16,7 @@
 //		Description: Проект  panoramaII (вторая версия) занимается склейкой двух изображений с использованием OpenCV
 //		c использованием поиска ключевых точек
 //		Auth:	Vadim Yarmushov
-//		Date: 17/03/21
+//		Date: 20/03/21
 //		Ver: 0.0.1
 //		
 //=======================================================================================
@@ -36,25 +36,32 @@ int main(int argc, char *argv[])
 	std::cout << "ver: 0.0.2 " << std::endl;
 	
 	
-	/*
+	
 	// если не ввели имена входных изображений и только 1 аргумент в коммандной строке
 	if (argc == 1)
 	{
 		print_instruction();	// выведем инструкцию
 		return -1;
 	}
-	*/
+	
 
 	// входные изображения
 	// изображения подавать на вход слева направо, сверху вниз
 	// это значит, что при вводе image_01 - это левое изображение, image_02 - правое - при горизонтальном совмещении,
 	// при вертикальном совмещении image_01 - это верхнее изображение, image_02 - нижнее
-//	cv::Mat image_01_origin = cv::imread(argv[1]);	// первая фотография для слияния
-//	cv::Mat image_02_origin = cv::imread(argv[2]); // вторая фотография для слияния
+	cv::Mat image_01_origin = cv::imread(argv[1]);	// первая фотография для слияния
+	cv::Mat image_02_origin = cv::imread(argv[2]); // вторая фотография для слияния
 
 	// полноцветные входные изображения
-	cv::Mat image_01_origin = cv::imread("Pan08_01.png");
-	cv::Mat image_02_origin = cv::imread("Pan08_02.png");
+//	cv::Mat image_01_origin = cv::imread("Pan08_01.png");
+//	cv::Mat image_02_origin = cv::imread("Pan08_02.png");
+
+
+
+
+
+
+
 
 	// создадим 256 тоное изображение
 	cv::Mat image_01(image_01_origin.size(), CV_8U);
@@ -123,7 +130,7 @@ int main(int argc, char *argv[])
 
 
 	// оставим для расчета только лучшие совпадения
-	// оставим только те рузультаты чья дистанция меньше 3*(min_dist+1)
+	// оставим только те рузультаты чья дистанция меньше 5*(min_dist+1)
 	
 	// хранилище лучших ключевых точек
 	std::vector< cv::DMatch > good_matches;	 
@@ -131,7 +138,7 @@ int main(int argc, char *argv[])
 
 	for (int i = 0; i < descriptors_01.rows; i++)
 	{
-		if (matches[i].distance < (3 * (min_dist + 1)) )
+		if (matches[i].distance < (5 * (min_dist + 1)) )
 		{
 			good_matches.push_back(matches[i]);
 		}
